@@ -28,6 +28,7 @@ import android.graphics.Bitmap
 import android.media.AudioManager
 import android.media.audiofx.AudioEffect
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -82,6 +83,7 @@ import org.akanework.gramophone.logic.utils.LastPlayedManager
 import org.akanework.gramophone.logic.utils.LrcUtils.extractAndParseLyrics
 import org.akanework.gramophone.logic.utils.LrcUtils.loadAndParseLyricsFile
 import org.akanework.gramophone.logic.utils.MediaStoreUtils
+import org.akanework.gramophone.logic.utils.XiaomiUtils
 import org.akanework.gramophone.logic.utils.exoplayer.EndedWorkaroundPlayer
 import org.akanework.gramophone.logic.utils.exoplayer.GramophoneMediaSourceFactory
 import org.akanework.gramophone.logic.utils.exoplayer.GramophoneRenderFactory
@@ -120,6 +122,7 @@ class GramophonePlaybackService : MediaLibraryService(), MediaSessionService.Lis
     private var shuffleFactory:
             ((Int) -> ((CircularShuffleOrder) -> Unit) -> CircularShuffleOrder)? = null
     private lateinit var customCommands: List<CommandButton>
+    private var customCommandsUse40dpIcon:Boolean = false
     private lateinit var handler: Handler
     private lateinit var nm: NotificationManagerCompat
     private lateinit var lastPlayedManager: LastPlayedManager
@@ -196,6 +199,9 @@ class GramophonePlaybackService : MediaLibraryService(), MediaSessionService.Lis
             nm.deleteNotificationChannel(NOTIFY_CHANNEL_ID)
         }
 
+        // Use 40dp icons on Xiaomi HyperOS (Android 14)
+        customCommandsUse40dpIcon = XiaomiUtils.isXiaomiHyperOS() && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU
+
         customCommands =
             listOf(
                 CommandButton.Builder() // shuffle currently disabled, click will enable
@@ -203,35 +209,35 @@ class GramophonePlaybackService : MediaLibraryService(), MediaSessionService.Lis
                     .setSessionCommand(
                         SessionCommand(PLAYBACK_SHUFFLE_ACTION_ON, Bundle.EMPTY)
                     )
-                    .setIconResId(R.drawable.ic_shuffle)
+                    .setIconResId(if (customCommandsUse40dpIcon) R.drawable.ic_shuffle_40dp else R.drawable.ic_shuffle)
                     .build(),
                 CommandButton.Builder() // shuffle currently enabled, click will disable
                     .setDisplayName(getString(R.string.shuffle))
                     .setSessionCommand(
                         SessionCommand(PLAYBACK_SHUFFLE_ACTION_OFF, Bundle.EMPTY)
                     )
-                    .setIconResId(R.drawable.ic_shuffle_on)
+                    .setIconResId(if (customCommandsUse40dpIcon) R.drawable.ic_shuffle_on_40dp else R.drawable.ic_shuffle_on)
                     .build(),
                 CommandButton.Builder() // repeat currently disabled, click will repeat all
                     .setDisplayName(getString(R.string.repeat_mode))
                     .setSessionCommand(
                         SessionCommand(PLAYBACK_REPEAT_ALL, Bundle.EMPTY)
                     )
-                    .setIconResId(R.drawable.ic_repeat)
+                    .setIconResId(if (customCommandsUse40dpIcon) R.drawable.ic_repeat_40dp else R.drawable.ic_repeat)
                     .build(),
                 CommandButton.Builder() // repeat all currently enabled, click will repeat one
                     .setDisplayName(getString(R.string.repeat_mode))
                     .setSessionCommand(
                         SessionCommand(PLAYBACK_REPEAT_ONE, Bundle.EMPTY)
                     )
-                    .setIconResId(R.drawable.ic_repeat_on)
+                    .setIconResId(if (customCommandsUse40dpIcon) R.drawable.ic_repeat_on_40dp else R.drawable.ic_repeat_on)
                     .build(),
                 CommandButton.Builder() // repeat one currently enabled, click will disable
                     .setDisplayName(getString(R.string.repeat_mode))
                     .setSessionCommand(
                         SessionCommand(PLAYBACK_REPEAT_OFF, Bundle.EMPTY)
                     )
-                    .setIconResId(R.drawable.ic_repeat_one_on)
+                    .setIconResId(if (customCommandsUse40dpIcon) R.drawable.ic_repeat_one_on_40dp else R.drawable.ic_repeat_one_on)
                     .build(),
             )
 
